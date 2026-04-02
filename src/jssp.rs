@@ -39,8 +39,8 @@ pub struct JobShopSchedulingProblem {
     instance: Instance,
     sequences: Vec<Vec<usize>>,
     processing_times: Vec<Vec<f64>>,
-    pub(crate) n_jobs: u32,
-    pub(crate) n_machines: u32,
+    pub(crate) n_jobs: usize,
+    pub(crate) n_machines: usize,
 }
 
 impl JobShopSchedulingProblem {
@@ -48,8 +48,8 @@ impl JobShopSchedulingProblem {
         instance: Instance,
         sequences: Vec<Vec<usize>>,
         processing_times: Vec<Vec<f64>>,
-        n_jobs: u32,
-        n_machines: u32,
+        n_jobs: usize,
+        n_machines: usize,
     ) -> Self {
         Self {
             instance,
@@ -109,8 +109,9 @@ impl JobShopSchedulingProblem {
             })
             .collect::<Vec<Vec<f64>>>();
         let first_line = lines.remove(0);
-        let n_jobs: u32 = first_line[0] as u32;
-        let n_machines: u32 = first_line[1] as u32;
+        let [n_jobs, n_machines] = first_line[..] else {
+            panic!("Could not parse first line.")
+        };
         let sequences = Self::read_sequences(&lines);
         let processing_times = Self::read_processing_times(&lines, &sequences);
 
@@ -118,8 +119,8 @@ impl JobShopSchedulingProblem {
             instance,
             sequences,
             processing_times,
-            n_jobs,
-            n_machines,
+            n_jobs as usize,
+            n_machines as usize,
         ))
     }
 

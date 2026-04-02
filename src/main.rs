@@ -17,19 +17,19 @@ fn main() -> Result<(), Error> {
         .num_threads(threads)
         .build_global()
         .unwrap();
-    let lower_bound = -1f64;
+    let lower_bound = 0f64;
     let upper_bound = 1f64;
     let pool_size = 40usize;
     let maximization = false;
-    let max_iterations = 800usize;
-    let executions: usize = 100;
+    let max_iterations = 300usize;
+    let executions: usize = 1000;
     println!("Available threads: {threads}, Will execute {executions} tasks.");
     let mut bests: Vec<Whale> = (0..executions)
         .into_par_iter()
         .map(move |_| {
             let instance: JobShopSchedulingProblem =
-                JobShopSchedulingProblem::from_instance(Instance::LA02).unwrap();
-            let whale_dim: usize = (instance.n_jobs * instance.n_machines) as usize;
+                JobShopSchedulingProblem::from_instance(Instance::LA07).unwrap();
+            let whale_dim: usize = instance.n_jobs * instance.n_machines;
             let mut solution = Algorithm::new(
                 Box::new(instance.clone()),
                 Bounds(lower_bound, upper_bound),
@@ -54,9 +54,10 @@ fn main() -> Result<(), Error> {
         })
         .collect::<Vec<Whale>>();
     bests.par_sort();
-    bests.par_iter().for_each(|w| {
-        println!("{}", w.fitness);
-    });
+    let sum: f64 = bests.par_iter().map(|x| x.fitness).sum::<f64>();
+    println!("Avg fitness: {}", sum / executions as f64);
+    println!("Best fitness: {}", bests[0].fitness);
+    println!("Worst fitness: {}", bests[executions - 1].fitness);
     println!("Execution time: {:?}", start.elapsed());
     Ok(())
 }

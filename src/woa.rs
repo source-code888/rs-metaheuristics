@@ -52,14 +52,9 @@ where
         }
     }
 
-    pub fn check_if_any_whale_goes_beyond_bounds(&mut self) {
-        self.whales.par_iter_mut().for_each(|whale| {
-            whale.check_if_goes_beyond_bounds(self.bounds.0, self.bounds.1);
-        })
-    }
     pub fn solve_problem_for_each_whale(&mut self) {
-        self.check_if_any_whale_goes_beyond_bounds();
         self.whales.par_iter_mut().for_each(|w| {
+            w.check_if_goes_beyond_bounds(self.bounds.0, self.bounds.1);
             let fit = self.problem.solve(w);
             w.update_fitness(fit)
         })
@@ -115,7 +110,6 @@ where
                     w.update_position_vector(new_pos);
                 }
             });
-            self.check_if_any_whale_goes_beyond_bounds();
             self.solve_problem_for_each_whale();
             self.sort_whales();
             let current_gen_best = self.whales[0].clone();

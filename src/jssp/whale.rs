@@ -1,6 +1,7 @@
 use crate::problem::{FromSeed, Individual};
 use nalgebra::DVector;
 use rand::{RngExt, rng};
+use rayon::prelude::*;
 
 #[derive(Debug, Clone)]
 pub struct Whale {
@@ -60,13 +61,14 @@ impl Individual<usize> for Whale {
         self.fitness
     }
     fn check_if_goes_beyond_bounds(&mut self, l_bound: f64, u_bound: f64) {
-        for i in 0..self.position.len() {
-            if self.position[i] < l_bound {
-                self.position[i] = l_bound;
-            } else if self.position[i] > u_bound {
-                self.position[i] = u_bound;
+        let pos = self.position.as_mut_slice();
+        pos.par_iter_mut().for_each(|p| {
+            if *p < l_bound {
+                *p = l_bound;
+            } else if *p > u_bound {
+                *p = u_bound;
             }
-        }
+        });
         self.ranked_order_value();
     }
 
