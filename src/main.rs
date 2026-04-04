@@ -1,8 +1,10 @@
 use crate::jssp::whale::Whale;
 use crate::jssp::{Instance, JobShopSchedulingProblem};
 use crate::problem::{ProblemBounds, Solvable};
+use nalgebra::DVector;
 use rayon::ThreadPoolBuilder;
 use rayon::prelude::*;
+use std::collections::HashMap;
 use std::time::Instant;
 mod jssp;
 mod problem;
@@ -25,13 +27,13 @@ fn main() -> Result<(), std::io::Error> {
     let pool_size = 40usize;
     let maximization = false;
     let max_iterations = 400usize;
-    let executions: usize = 5;
+    let executions: usize = 10;
     println!("Available threads: {threads}, Will execute {executions} tasks.");
     let mut bests: Vec<Whale> = (0..executions)
         .into_par_iter()
         .map(move |_| {
             let instance: JobShopSchedulingProblem =
-                JobShopSchedulingProblem::from_instance(Instance::ABZ05).unwrap();
+                JobShopSchedulingProblem::from_instance(Instance::LA07).unwrap();
             let whale_dim: usize = instance.n_jobs * instance.n_machines;
             let mut solution = crate::woa_lfde::WoaLfde::new(
                 Box::new(instance.clone()),
@@ -41,7 +43,7 @@ fn main() -> Result<(), std::io::Error> {
                 pool_size,
                 whale_dim,
                 move || {
-                    let sequence = instance.generate_base_sequence();
+                    let sequence: DVector<usize> = instance.generate_base_sequence();
                     let mut whale: Whale = Whale::with_random_components(
                         whale_dim,
                         lower_bound,
@@ -62,5 +64,29 @@ fn main() -> Result<(), std::io::Error> {
     println!("Best fitness: {}", bests[0].fitness);
     println!("Worst fitness: {}", bests[executions - 1].fitness);
     println!("Execution time: {:?}", start.elapsed());
+    println!("best_sequence: {:?}", bests[0].sequence);
+    println!(
+        "best_sequence_letters: {:?}",
+        generate_letters(bests[0].sequence.as_slice()).join(",")
+    );
     Ok(())
+}
+
+fn generate_letters(sequence: &[usize]) -> Vec<String> {
+    let mut res: Vec<String> = vec![];
+    let letters: Vec<char> = vec![
+        'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
+    ];
+    let mut aux: HashMap<char, usize> = HashMap::new();
+    for &i in sequence {
+        let l: char = letters[i];
+        if let Some(&count) = aux.get(&l) {
+            res.push(format!("{}{}", l, count + 1));
+            aux.insert(l, count + 1);
+        } else {
+            res.push(format!("{}1", l));
+            aux.insert(l, 1);
+        }
+    }
+    res
 }
