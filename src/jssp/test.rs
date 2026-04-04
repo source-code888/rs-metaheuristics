@@ -53,7 +53,6 @@ fn test_3() {
     assert_eq!(instance.solve(&whale), 45f64)
 }
 
-
 #[test]
 fn test_4() {
     let mut whale: Whale = Whale::new(
@@ -62,5 +61,8 @@ fn test_4() {
         0f64,
     );
     whale.check_if_goes_beyond_bounds(-1f64, 1f64);
-    assert_eq!(whale.position, DVector::from_vec(vec![-1f64, 0.5, 0.2, 0.8, 0.3]),)
+    assert_eq!(
+        whale.position,
+        DVector::from_vec(vec![-1f64, 0.5, 0.2, 0.8, 0.3]),
+    )
 }

@@ -1,4 +1,4 @@
-use crate::problem::{FromSeed, Individual, Solvable};
+use crate::problem::{FromSeed, Individual, ProblemBounds, Solvable};
 use nalgebra::DVector;
 use rand::{RngExt, rng};
 use std::f64::consts::{E, PI};
@@ -8,14 +8,12 @@ use rayon::prelude::*;
 
 mod whale;
 
-pub struct Bounds(pub f64, pub f64);
-
 pub struct Algorithm<T, R>
 where
     R: Send + Sync + Clone + FromSeed + Individual<T> + Ord,
 {
     pub(crate) problem: Box<dyn Solvable<T, R> + Send + Sync>,
-    pub(crate) bounds: Bounds,
+    pub(crate) bounds: ProblemBounds,
     pub(crate) maximization: bool,
     pub(crate) max_iterations: usize,
     pub(crate) pool_size: usize,
@@ -30,7 +28,7 @@ where
 {
     pub fn new<F>(
         problem: Box<dyn Solvable<T, R> + Send + Sync>,
-        bounds: Bounds,
+        bounds: ProblemBounds,
         maximization: bool,
         max_iterations: usize,
         pool_size: usize,

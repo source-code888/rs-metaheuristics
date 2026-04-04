@@ -125,12 +125,12 @@ impl JobShopSchedulingProblem {
     }
 
     pub fn generate_base_sequence(&self) -> DVector<usize> {
-        let size: usize = (self.n_jobs * self.n_machines) as usize;
+        let size: usize = self.n_jobs * self.n_machines;
         let mut seq: DVector<usize> = DVector::zeros(size);
         let mut s: usize = 0;
         for i in 1..=size {
             seq[i - 1] = s;
-            if i % self.n_machines as usize == 0 {
+            if i % self.n_machines == 0 {
                 s += 1;
             }
         }
@@ -141,9 +141,9 @@ impl JobShopSchedulingProblem {
 impl Solvable<usize, Whale> for JobShopSchedulingProblem {
     #[allow(unused)]
     fn solve(&self, individual: &Whale) -> f64 {
-        let mut operations: DVector<usize> = DVector::zeros(self.n_jobs as usize);
-        let mut job_time: DVector<f64> = DVector::zeros(self.n_jobs as usize);
-        let mut machine_time: DVector<f64> = DVector::zeros(self.n_machines as usize);
+        let mut operations: DVector<usize> = DVector::zeros(self.n_jobs);
+        let mut job_time: DVector<f64> = DVector::zeros(self.n_jobs);
+        let mut machine_time: DVector<f64> = DVector::zeros(self.n_machines);
         for job in individual.solution_vector() {
             let job: usize = *job;
             // Machine of given operation of the current job

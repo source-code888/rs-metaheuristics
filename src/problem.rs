@@ -1,5 +1,7 @@
 use nalgebra::DVector;
 
+pub(crate) struct ProblemBounds(pub f64, pub f64);
+
 pub trait Solvable<T, R>
 where
     R: FromSeed + Individual<T>,
