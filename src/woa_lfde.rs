@@ -1,8 +1,5 @@
-use crate::sign::sign;
-use crate::{
-    levy_flight,
-    problem::{FromSeed, Individual, ProblemBounds, Solvable},
-};
+use crate::problem::{FromSeed, Individual, ProblemBounds, Solvable};
+use crate::utils::{exclusive_usize, levy_flight, sign};
 use nalgebra::DVector;
 use rand::{RngExt, rng};
 use rayon::prelude::*;
@@ -97,8 +94,7 @@ where
                                 best_position - coefficient_a.component_mul(&d_coefficient);
                             w.update_position_vector(new_pos);
                         } else {
-                            let random_pos: usize =
-                                rng().random_range(0f64..self.pool_size as f64) as usize;
+                            let random_pos: usize = exclusive_usize(0, self.pool_size, vec![flag]);
                             let r_whale: &DVector<f64> = aux_whales[random_pos].position_vector();
                             let sg: DVector<f64> = sign(DVector::from_vec(
                                 (0..dim)
@@ -107,7 +103,7 @@ where
                                     .collect::<Vec<f64>>(),
                             ));
                             let levy: DVector<f64> =
-                                DVector::from_vec(levy_flight::levy_flight(dim, 1.5f64, 0.1f64));
+                                DVector::from_vec(levy_flight(dim, 1.5f64, 0.1f64));
                             let new_pos: DVector<f64> = r_whale.add(
                                 sg.component_mul(&levy)
                                     .component_mul(&r_whale.sub(position)),
@@ -124,12 +120,12 @@ where
                     w.check_if_goes_beyond_bounds(f64::MIN, f64::MAX);
                     let fitness = self.problem.solve(&w);
                     w.update_fitness(fitness);
-                    if flag & 1 == 0 && fitness >= self.best_whale.fitness() {
+                    if (flag + 1) % 3 == 0 && fitness >= self.best_whale.fitness() {
                         // DE current_to_best
                         let position = w.position_vector();
                         let f: f64 = rng().random_range(0f64..=2f64);
-                        let r1: usize = rng().random_range(0f64..self.pool_size as f64) as usize;
-                        let r2: usize = rng().random_range(0f64..self.pool_size as f64) as usize;
+                        let r1: usize = exclusive_usize(0, self.pool_size, vec![flag]);
+                        let r2: usize = exclusive_usize(0, self.pool_size, vec![flag, r1]);
                         let r1_w = aux_whales[r1].position_vector();
                         let r2_w = aux_whales[r2].position_vector();
                         let j_rand: usize = rng().random_range(0usize..dim);

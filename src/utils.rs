@@ -1,5 +1,7 @@
 use std::f64::consts::PI;
 
+use nalgebra::DVector;
+use rand::RngExt;
 use rand_distr::{Distribution, Normal};
 use rayon::prelude::*;
 use statrs::function::gamma::gamma;
@@ -21,13 +23,15 @@ pub(crate) fn levy_flight(dim: usize, beta: f64, alfa: f64) -> Vec<f64> {
         .collect()
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+pub(crate) fn sign(x: DVector<f64>) -> DVector<f64> {
+    x.map(|v| v.signum())
+}
 
-    #[test]
-    fn test_levy_flight() {
-        let result = levy_flight(10, 1.5, 0.1);
-        assert_eq!(result.len(), 10);
+pub(crate) fn exclusive_usize(l_bound: usize, u_bound: usize, exclude: Vec<usize>) -> usize {
+    let mut rng = rand::rng();
+    let mut index: usize = rng.random_range(l_bound..u_bound);
+    while exclude.contains(&index) {
+        index = rng.random_range(l_bound..u_bound);
     }
+    index
 }

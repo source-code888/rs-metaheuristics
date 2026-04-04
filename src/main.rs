@@ -1,17 +1,17 @@
 use crate::jssp::whale::Whale;
 use crate::jssp::{Instance, JobShopSchedulingProblem};
 use crate::problem::{ProblemBounds, Solvable};
-use crate::woa_lfde::WoaLfde;
 use rayon::ThreadPoolBuilder;
 use rayon::prelude::*;
 use std::time::Instant;
 mod jssp;
-mod levy_flight;
 mod problem;
-mod sign;
 #[allow(dead_code)]
 mod woa;
+#[allow(dead_code)]
 mod woa_lfde;
+
+mod utils;
 
 fn main() -> Result<(), std::io::Error> {
     let start = Instant::now();
@@ -20,20 +20,20 @@ fn main() -> Result<(), std::io::Error> {
         .num_threads(threads)
         .build_global()
         .unwrap();
-    let lower_bound = 0f64;
+    let lower_bound = -1f64;
     let upper_bound = 1f64;
     let pool_size = 40usize;
     let maximization = false;
     let max_iterations = 400usize;
-    let executions: usize = 100;
+    let executions: usize = 5;
     println!("Available threads: {threads}, Will execute {executions} tasks.");
     let mut bests: Vec<Whale> = (0..executions)
         .into_par_iter()
         .map(move |_| {
             let instance: JobShopSchedulingProblem =
-                JobShopSchedulingProblem::from_instance(Instance::LA02).unwrap();
+                JobShopSchedulingProblem::from_instance(Instance::ABZ05).unwrap();
             let whale_dim: usize = instance.n_jobs * instance.n_machines;
-            let mut solution = WoaLfde::new(
+            let mut solution = crate::woa_lfde::WoaLfde::new(
                 Box::new(instance.clone()),
                 ProblemBounds(lower_bound, upper_bound),
                 maximization,
